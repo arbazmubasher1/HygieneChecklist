@@ -194,7 +194,6 @@ if st.button("✅ Submit Checklist"):
 
     for group in checklist_groups:
         for item, response in group.items():
-            # If using buttons, response will be like {"selection": "✅", "remark": "..."}
             selected_value = response["selection"] if isinstance(response, dict) else response
             if selected_value not in ["✅", "❌"]:
                 incomplete_items.append(item)
@@ -215,6 +214,14 @@ if st.button("✅ Submit Checklist"):
     score_percentage = round((correct_checked / total_checked) * 100, 2)
     st.success("✅ Checklist submitted successfully!")
     st.info(f"🧮 Final Hygiene Score: **{correct_checked} / {total_checked}** ({score_percentage}%)")
+
+    # Build remarks from ❌ selections
+    remarks_dict = {
+        item: response["remark"]
+        for group in checklist_groups
+        for item, response in group.items()
+        if isinstance(response, dict) and response.get("selection") == "❌"
+    }
 
     # Prepare payload
     data = {
@@ -237,7 +244,6 @@ if st.button("✅ Submit Checklist"):
             "total": total_checked,
             "percentage": score_percentage
         }
-        
     }
 
     submit_to_firebase(data, upscaled, bike_upscaled, manager_signature)
