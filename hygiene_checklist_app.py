@@ -71,6 +71,16 @@ def checklist_buttons(label):
         "remark": st.session_state[f"{key_prefix}_remark"]
     }
 
+# --- Show Reference Image ---
+st.subheader("📸 Appearance Guidelines")
+
+if employee_type == "Crew" and gender == "Male":
+    st.image("Crew_male.PNG", caption="Crew Male Appearance", use_column_width=True)
+elif employee_type == "Crew" and gender == "Female":
+    st.image("Crew_female.PNG", caption="Crew Female Appearance", use_column_width=True)
+elif employee_type == "Rider":
+    st.image("Rider_male.PNG", caption="Rider Appearance", use_column_width=True)
+
 # --- Section 3: Grooming Standards ---
 st.subheader("🧼 Grooming Standards")
 
