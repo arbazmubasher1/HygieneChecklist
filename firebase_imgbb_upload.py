@@ -1,35 +1,34 @@
 import firebase_admin
-from firebase_admin import credentials, firestore, storage
+from firebase_admin import credentials, firestore
 import requests
-from PIL import Image
-import io
 import base64
-import uuid
-import os
+import streamlit as st
 
-# Initialize Firebase app
+# Initialize Firebase
 if not firebase_admin._apps:
-    cred = credentials.Certificate("firebase_credentials.json")  # Or use st.secrets["firebase"]
-    firebase_admin.initialize_app(cred, {
-        'storageBucket': 'zeeshan-s-hygiene-checklist.appspot.com'
-    })
-
+    cred = credentials.Certificate(dict(st.secrets["firebase"]))
+    firebase_admin.initialize_app(cred)
 db = firestore.client()
-bucket = storage.bucket()
 
-IMGUR_API_KEY = "08b53a28b8374832a8ea6c5f20048423"  # You can also load this via st.secrets
+# ImgBB API Key from secrets
+IMGBB_API = st.secrets["imgbb"]["api_key"]
 
-def upload_to_imgbb(image_bytes, name):
-    url = "https://api.imgbb.com/1/upload"
-    payload = {
-        "key": IMGUR_API_KEY,
-        "image": base64.b64encode(image_bytes).decode("utf-8"),
-        "name": name
-    }
-    response = requests.post(url, data=payload)
-    if response.ok:
+def upload_to_imgbb(image_file):
+    if image_file is None:
+        return None
+    image_bytes = image_file.getvalue()
+    encoded = base64.b64encode(image_bytes).decode("utf-8")
+    response = requests.post(
+        "https://api.imgbb.com/1/upload",
+        data={
+            "key": IMGBB_API,
+            "image": encoded
+        }
+    )
+    if response.status_code == 200:
         return response.json()["data"]["url"]
     else:
+        st.error("Failed to upload image to ImgBB.")
         return None
 
 def submit_to_firebase(data, rider_photo, bike_photo, manager_signature):
