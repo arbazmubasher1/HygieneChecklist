@@ -12,7 +12,7 @@ st.markdown("""
     <style>
         img {
             max-height: 500px;
-            width: auto;
+            width: 200;
             display: block;
             margin-left: auto;
             margin-right: auto;
