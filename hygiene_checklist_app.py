@@ -50,9 +50,9 @@ def checklist_buttons(label):
         if st.button("❌", key=f"{key_prefix}_no"):
             st.session_state[f"{key_prefix}_value"] = "❌"
 
-    with col3:
-        if st.button("✍️ Remark", key=f"{key_prefix}_rem"):
-            st.session_state[f"{key_prefix}_value"] = "✍"
+    # with col3:
+    #     if st.button("✍️ Remark", key=f"{key_prefix}_rem"):
+    #         st.session_state[f"{key_prefix}_value"] = "✍"
 
     selected = st.session_state[f"{key_prefix}_value"]
     st.markdown(f"**Selected:** {selected or 'None'}")
@@ -61,10 +61,10 @@ def checklist_buttons(label):
         st.session_state[f"{key_prefix}_remark"] = st.text_input(
             f"❗ Remark required for: {label}", key=f"{key_prefix}_text", placeholder="Enter reason..."
         )
-    elif selected == "✍":
-        st.session_state[f"{key_prefix}_remark"] = st.text_input(
-            f"✍️ Optional Remark for: {label}", key=f"{key_prefix}_text", placeholder="Enter note..."
-        )
+    # elif selected == "✍":
+    #     st.session_state[f"{key_prefix}_remark"] = st.text_input(
+    #         f"✍️ Optional Remark for: {label}", key=f"{key_prefix}_text", placeholder="Enter note..."
+    #     )
 
     return {
         "selection": selected,
