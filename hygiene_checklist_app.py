@@ -6,6 +6,21 @@ from PIL import Image
 st.set_page_config(page_title="Hygiene Checklist", layout="wide")
 st.title("🧼 Daily Inspection: Crew & Rider Hygiene Readiness Checklist")
 
+
+# --- Optional CSS to resize all images ---
+st.markdown("""
+    <style>
+        img {
+            max-height: 500px;
+            width: auto;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+    </style>
+""", unsafe_allow_html=True)
+
+
 # --- Section 1: Filters ---
 branch = st.selectbox("📍 Select Branch", [
     "DHA-P6", "DHA-CC", "Cloud Kitchen", "Johar Town", "Bahria", "Wehshi Lab", "Emporium"
