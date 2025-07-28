@@ -28,8 +28,9 @@ def checklist_buttons(label):
         if st.button("✍️ Remark", key=f"{key_prefix}_remark"):
             st.session_state[f"{key_prefix}_value"] = "✍️ Remark"
 
-    st.markdown(f"**Selected:** {st.session_state[f'{key_prefix}_value'] or 'None'}")
+    st.markdown(f"<span style='font-size:14px;'>Selected: <b>{st.session_state[f'{key_prefix}_value'] or 'None'}</b></span>", unsafe_allow_html=True)
     return st.session_state[f"{key_prefix}_value"]
+
 
 
 employee_type = st.selectbox("👷 Select Employee Type", ["Crew", "Rider"])
