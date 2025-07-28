@@ -159,9 +159,31 @@ st.markdown("### 📊 Checklist Completion Progress")
 st.progress(progress / 100, text=f"{filled} / {total} items completed")
 
 # --- Manager Verification ---
-st.subheader("🗾️ Manager Verification")
-manager_name = st.text_input("Manager Name")
-manager_signed = st.checkbox("I verify this information is correct")
+from streamlit_drawable_canvas import st_canvas
+
+st.subheader("🧾 Manager Verification")
+
+manager_name = st.text_input("Manager Name (optional)")
+
+st.markdown("✍️ **Please sign below:**")
+signature_canvas = st_canvas(
+    fill_color="rgba(255, 255, 255, 0)",  # Transparent background
+    stroke_width=2,
+    stroke_color="#000000",
+    background_color="#ffffff",
+    height=150,
+    drawing_mode="freedraw",
+    key="signature"
+)
+
+# Save the signature image if drawn
+manager_signature = None
+if signature_canvas.image_data is not None:
+    signature_image = Image.fromarray(signature_canvas.image_data.astype('uint8'), 'RGBA')
+    if signature_image.getbbox():  # Check if something is drawn
+        manager_signature = signature_image
+        st.image(manager_signature, caption="Manager Signature", use_container_width=True)
+
 
 # --- Submit Checklist ---
 if st.button("✅ Submit Checklist"):

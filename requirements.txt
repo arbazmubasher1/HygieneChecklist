@@ -3,3 +3,4 @@ firebase-admin
 requests
 Pillow
 python-dotenv
+streamlit-drawable-canvas
