@@ -1,44 +1,60 @@
 import firebase_admin
-from firebase_admin import credentials, firestore
+from firebase_admin import credentials, firestore, storage
 import requests
+from PIL import Image
+import io
 import base64
-import streamlit as st
+import uuid
+import os
 
-# Initialize Firebase
+# Initialize Firebase app
 if not firebase_admin._apps:
-    cred = credentials.Certificate(dict(st.secrets["firebase"]))
-    firebase_admin.initialize_app(cred)
+    cred = credentials.Certificate("firebase_credentials.json")  # Or use st.secrets["firebase"]
+    firebase_admin.initialize_app(cred, {
+        'storageBucket': 'zeeshan-s-hygiene-checklist.appspot.com'
+    })
+
 db = firestore.client()
+bucket = storage.bucket()
 
-# ImgBB API Key from secrets
-IMGBB_API = st.secrets["imgbb"]["api_key"]
+IMGUR_API_KEY = "08b53a28b8374832a8ea6c5f20048423"  # You can also load this via st.secrets
 
-def upload_to_imgbb(image_file):
-    if image_file is None:
-        return None
-    image_bytes = image_file.getvalue()
-    encoded = base64.b64encode(image_bytes).decode("utf-8")
-    response = requests.post(
-        "https://api.imgbb.com/1/upload",
-        data={
-            "key": IMGBB_API,
-            "image": encoded
-        }
-    )
-    if response.status_code == 200:
+def upload_to_imgbb(image_bytes, name):
+    url = "https://api.imgbb.com/1/upload"
+    payload = {
+        "key": IMGUR_API_KEY,
+        "image": base64.b64encode(image_bytes).decode("utf-8"),
+        "name": name
+    }
+    response = requests.post(url, data=payload)
+    if response.ok:
         return response.json()["data"]["url"]
     else:
-        st.error("Failed to upload image to ImgBB.")
         return None
 
-def submit_to_firebase(data, rider_image_file=None, bike_image_file=None):
-    rider_img_url = upload_to_imgbb(rider_image_file)
-    bike_img_url = upload_to_imgbb(bike_image_file) if data["employee_type"] == "Rider" else None
+def submit_to_firebase(data, rider_photo, bike_photo, manager_signature):
+    image_links = {}
 
-    data["timestamp"] = firestore.SERVER_TIMESTAMP
-    data["rider_image_url"] = rider_img_url
-    data["bike_image_url"] = bike_img_url
+    # Upload Employee Photo
+    if rider_photo:
+        emp_bytes = rider_photo.getvalue()
+        image_links["employee_photo_url"] = upload_to_imgbb(emp_bytes, f"emp_{uuid.uuid4()}")
+    
+    # Upload Bike Photo
+    if bike_photo:
+        bike_bytes = bike_photo.getvalue()
+        image_links["bike_photo_url"] = upload_to_imgbb(bike_bytes, f"bike_{uuid.uuid4()}")
 
-    doc_ref = db.collection("hygiene_checklist").document()
-    doc_ref.set(data)
-    st.success("✅ Data and images successfully submitted to Firebase.")
+    # Upload Manager Signature (as base64 PNG from canvas)
+    if manager_signature:
+        signature_bytes = manager_signature.getvalue()
+        image_links["signature_url"] = upload_to_imgbb(signature_bytes, f"sign_{uuid.uuid4()}")
+
+    # Append image links to data
+    data.update(image_links)
+
+    # Store in Firestore under date/branch/employee_id
+    doc_path = f"{data['date']}/{data['branch']}/{data['employee_id']}_{str(uuid.uuid4())[:8]}"
+    db.document(f"checklists/{doc_path}").set(data)
+
+    print("✅ Data successfully submitted to Firebase.")
