@@ -1,7 +1,8 @@
 import streamlit as st
 from datetime import datetime
+from firebase_imgbb_upload import submit_to_firebase  # Make sure this file exists
+import base64
 
-# --- Page Config ---
 st.set_page_config(page_title="Hygiene Checklist", layout="wide")
 st.title("🧼 Daily Inspection: Crew & Rider Hygiene Readiness Checklist")
 
@@ -14,118 +15,131 @@ employee_type = st.selectbox("👷 Select Employee Type", ["Crew", "Rider"])
 shift_type = st.selectbox("🕒 Select Shift", ["Morning", "Lunch", "Dinner", "Closing"])
 date = st.date_input("📅 Date", value=datetime.today())
 gender = st.selectbox("🚻 Select Gender", ["Male", "Female"])
-
-# --- Optional Role Type for Crew ---
-role_type = None
-if employee_type == "Crew":
-    role_type = st.selectbox("🎭 Select Role Type", ["FOH", "BOH"])
+role_type = st.selectbox("🎭 Select Role Type", ["FOH", "BOH"]) if employee_type == "Crew" else None
 
 # --- Section 2: Employee Info ---
 st.subheader("👤 Employee Details")
 emp_id = st.text_input("Employee ID")
 emp_name = st.text_input("Employee Name")
 
-# --- Camera Input for Images ---
 rider_photo = st.camera_input("📸 Capture Employee Photo")
-bike_photo = None
-if employee_type == "Rider":
-    bike_photo = st.camera_input("🏍️ Capture Bike Photo")
+bike_photo = st.camera_input("🏍️ Capture Bike Photo") if employee_type == "Rider" else None
 
-# --- Section 3: Personal Hygiene ---
-st.subheader("🧍 Personal Hygiene")
+# --- Display Reference Image ---
+if employee_type == "Rider" and gender == "Male":
+    st.image("Crew_male.PNG", caption="Reference", use_container_width=True)
+elif employee_type == "Crew" and gender == "Female":
+    st.image("Crew_female.PNG", caption="Reference", use_container_width=True)
 
-def checklist_field(label):
-    return st.radio(label, ["✅", "❌", "✍️ Remark"], horizontal=True, key=label)
+# --- Grooming Standards ---
+st.markdown("<h2 style='text-align: center;'>🧼 Grooming Standards</h2>", unsafe_allow_html=True)
 
-hygiene_fields = {
-    "Clean Shirt": checklist_field("Clean Shirt"),
-    "Clean Black Pant": checklist_field("Clean Black Pant"),
-    "Wear Black Shoes": checklist_field("Wear Black Shoes"),
-    "Wear Black Socks": checklist_field("Wear Black Socks"),
-    "Facial Hair Grooming": checklist_field("Facial Hair Grooming"),
-    "Nail Care": checklist_field("Nail Care"),
-    "Oral Hygiene": checklist_field("Oral Hygiene")
-}
+grooming_items = [
+    "Clean Shirt", "Clean Black Pant", "Wear Black Shoes", "Wear Black Socks",
+    "Nail Care", "Oral Hygiene"
+]
 
-# --- Section 4: Grooming Standards (conditional logic) ---
-show_cap = False
-show_beard = False
-show_hair = False
-show_scarf = False
+# Add based on role/gender
+if employee_type == "Rider" or (employee_type == "Crew" and role_type == "FOH"):
+    grooming_items += ["JJ Cap", "Hair Grooming"]
+if gender == "Male":
+    grooming_items += ["Beard Grooming"]
+if gender == "Female":
+    grooming_items += ["Scarf / Cap Management"]
 
-if employee_type == "Rider":
-    show_cap = True
-    show_hair = True
-    show_beard = (gender == "Male")
-    show_scarf = (gender == "Female")
-elif employee_type == "Crew":
-    if role_type == "FOH":
-        show_cap = True
-        show_hair = True
-        show_beard = (gender == "Male")
-        show_scarf = (gender == "Female")
-    elif role_type == "BOH":
-        show_cap = False
-        show_hair = False
-        show_beard = False
-        show_scarf = (gender == "Female")
+# --- Checklist with progress and remarks ---
+filled = 0
+remarks_dict = {}
+selections = {}
 
-if show_cap or show_hair or show_beard or show_scarf:
-    st.subheader("🎩 Grooming Standards")
+for item in grooming_items:
+    st.markdown(f"**{item}**")
+    col1, col2, col3 = st.columns([1, 1, 2])
+    key_prefix = item.replace(" ", "_")
 
-if show_cap:
-    hygiene_fields["JJ Cap"] = checklist_field("JJ Cap")
-if show_hair:
-    hygiene_fields["Hair Grooming"] = checklist_field("Hair Grooming")
-if show_beard:
-    hygiene_fields["Beard Grooming"] = checklist_field("Beard Grooming")
-if show_scarf:
-    hygiene_fields["Scarf / Cap Management"] = checklist_field("Scarf / Cap Management")
+    if f"{key_prefix}_value" not in st.session_state:
+        st.session_state[f"{key_prefix}_value"] = None
+    if f"{key_prefix}_remark" not in st.session_state:
+        st.session_state[f"{key_prefix}_remark"] = ""
+
+    with col1:
+        if st.button("✅", key=f"{key_prefix}_yes"):
+            st.session_state[f"{key_prefix}_value"] = "✅"
+            st.session_state[f"{key_prefix}_remark"] = ""
+
+    with col2:
+        if st.button("❌", key=f"{key_prefix}_no"):
+            st.session_state[f"{key_prefix}_value"] = "❌"
+
+    with col3:
+        if st.session_state[f"{key_prefix}_value"] == "❌":
+            st.session_state[f"{key_prefix}_remark"] = st.text_input(
+                f"❗ Remarks for {item}", key=f"{key_prefix}_remark_input"
+            )
+
+    value = st.session_state[f"{key_prefix}_value"]
+    selections[item] = value
+    if value == "✅":
+        filled += 1
+    if value == "❌":
+        remarks_dict[item] = st.session_state[f"{key_prefix}_remark"]
+
+# --- Progress Bar ---
+total_fields = len(grooming_items)
+progress = int((filled / total_fields) * 100) if total_fields > 0 else 0
+st.progress(progress, text=f"{filled} / {total_fields} grooming items completed")
 
 # --- Section 5: Safety Checks for Riders ---
 safety_checks = {}
 if employee_type == "Rider":
     st.subheader("🛡️ Rider Safety Checks")
-    safety_checks = {
-        "Helmet": checklist_field("Helmet"),
-        "Mobile Phone": checklist_field("Mobile Phone"),
-        "Handfree": checklist_field("Handfree"),
-        "Gloves": checklist_field("Gloves")
-    }
+    for item in ["Helmet", "Mobile Phone", "Handfree", "Gloves"]:
+        safety_checks[item] = st.radio(item, ["✅", "❌"], horizontal=True)
 
-# --- Section 6: Required Documents for Riders ---
+# --- Section 6: Documents ---
 documents_check = {}
 if employee_type == "Rider":
     st.subheader("📄 Required Documents")
-    documents_check = {
-        "Motorcycle License": checklist_field("Motorcycle License"),
-        "Registration Papers": checklist_field("Registration Papers"),
-        "CNIC": checklist_field("CNIC")
-    }
+    doc_items = ["Motorcycle License", "Registration Papers", "CNIC"]
     if branch in ["DHA-P6", "Wehshi Lab"]:
-        documents_check["Society Gate Pass"] = checklist_field("Society Gate Pass")
+        doc_items.append("Society Gate Pass")
+    for item in doc_items:
+        documents_check[item] = st.radio(item, ["✅", "❌"], horizontal=True)
 
-# --- Section 7: Bike Inspection for Riders ---
+# --- Section 7: Bike Inspection ---
 bike_inspection = {}
 if employee_type == "Rider":
     st.subheader("🔧 Bike Inspection")
-    bike_inspection = {
-        "Fuel Level": checklist_field("Fuel Level"),
-        "Tire Condition": checklist_field("Tire Condition"),
-        "Brakes Working": checklist_field("Brakes Working"),
-        "Clean Condition": checklist_field("Clean Condition"),
-        "Chain Cover": checklist_field("Chain Cover"),
-        "Rear-View Mirrors": checklist_field("Rear-View Mirrors"),
-        "Seat Carrier": checklist_field("Seat Carrier"),
-        "Leg Guard": checklist_field("Leg Guard")
-    }
+    for item in [
+        "Fuel Level", "Tire Condition", "Brakes Working", "Clean Condition",
+        "Chain Cover", "Rear-View Mirrors", "Seat Carrier", "Leg Guard"
+    ]:
+        bike_inspection[item] = st.radio(item, ["✅", "❌"], horizontal=True)
 
-# --- Section 8: Manager Verification ---
+# --- Manager Verification ---
 st.subheader("🧾 Manager Verification")
 manager_name = st.text_input("Manager Name")
 manager_signed = st.checkbox("I verify this information is correct")
 
-# --- Submit Button ---
+# --- Submit Checklist ---
 if st.button("✅ Submit Checklist"):
-    st.success("Checklist captured. Ready for image upload and Firebase integration.")
-    st.info("📸 Rider and bike images, along with form data, will be sent in the next phase.")
+    if not manager_signed:
+        st.error("Please verify the checklist before submitting.")
+    else:
+        data = {
+            "branch": branch,
+            "employee_type": employee_type,
+            "shift": shift_type,
+            "date": str(date),
+            "gender": gender,
+            "role_type": role_type if role_type else "",
+            "employee_id": emp_id,
+            "employee_name": emp_name,
+            "manager_name": manager_name,
+            "grooming": selections,
+            "remarks": remarks_dict,
+            "safety_checks": safety_checks,
+            "documents": documents_check,
+            "bike_inspection": bike_inspection
+        }
+        submit_to_firebase(data, rider_photo, bike_photo)
