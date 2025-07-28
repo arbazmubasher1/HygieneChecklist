@@ -5,26 +5,41 @@ from datetime import datetime
 st.set_page_config(page_title="Hygiene Checklist", layout="wide")
 st.title("🧼 Daily Inspection: Crew & Rider Hygiene Readiness Checklist")
 
-# --- Helper: Button-style Checklist Field ---
 def checklist_buttons(label):
     col1, col2, col3 = st.columns([1, 1, 2])
     key_prefix = label.replace(" ", "_")
 
+    # Initial state
     if f"{key_prefix}_value" not in st.session_state:
         st.session_state[f"{key_prefix}_value"] = None
+    if f"{key_prefix}_remark" not in st.session_state:
+        st.session_state[f"{key_prefix}_remark"] = ""
 
+    # Buttons
     with col1:
         if st.button("✅", key=f"{key_prefix}_yes"):
             st.session_state[f"{key_prefix}_value"] = "✅"
+            st.session_state[f"{key_prefix}_remark"] = ""
     with col2:
         if st.button("❌", key=f"{key_prefix}_no"):
             st.session_state[f"{key_prefix}_value"] = "❌"
     with col3:
-        if st.button("✍️ Remark", key=f"{key_prefix}_remark"):
+        if st.button("✍️ Remark", key=f"{key_prefix}_remark_btn"):
             st.session_state[f"{key_prefix}_value"] = "✍️ Remark"
 
-    st.markdown(f"<span style='font-size:14px;'>Selected: <b>{st.session_state[f'{key_prefix}_value'] or 'None'}</b></span>", unsafe_allow_html=True)
-    return st.session_state[f"{key_prefix}_value"]
+    # Display text input based on selection
+    selected = st.session_state[f"{key_prefix}_value"]
+    st.markdown(f"**Selected:** {selected or 'None'}")
+
+    if selected == "❌":
+        st.session_state[f"{key_prefix}_remark"] = st.text_input(f"📝 Required Remark for: {label}", key=f"{key_prefix}_text", placeholder="Enter remark...")
+    elif selected == "✍️ Remark":
+        st.session_state[f"{key_prefix}_remark"] = st.text_input(f"✍️ Optional Remark for: {label}", key=f"{key_prefix}_text", placeholder="Add notes...")
+
+    return {
+        "selection": selected,
+        "remark": st.session_state[f"{key_prefix}_remark"]
+    }
 
 # --- Section 1: Filters ---
 branch = st.selectbox("📍 Select Branch", [
