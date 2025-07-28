@@ -8,17 +8,21 @@ st.title("🧼 Daily Inspection: Crew & Rider Hygiene Readiness Checklist")
 
 
 # --- Optional CSS to resize all images ---
+# Limit image height
 st.markdown("""
     <style>
         img {
-            max-height: 500px;
-            width: 200;
+            max-height: 400px;
+            height: auto;
+            width: auto;
             display: block;
             margin-left: auto;
             margin-right: auto;
+            object-fit: contain;
         }
     </style>
 """, unsafe_allow_html=True)
+
 
 
 # --- Section 1: Filters ---
