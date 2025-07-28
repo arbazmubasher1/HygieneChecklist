@@ -77,8 +77,22 @@ st.subheader("🧼 Grooming Standards")
 
 from PIL import Image
 
+from PIL import Image
+
+# --- Appearance Guidelines Section ---
 st.subheader("📸 Appearance Guidelines")
 
+# Inject CSS to limit image height
+st.markdown("""
+    <style>
+        img {
+            max-height: 600px;
+            object-fit: contain;
+        }
+    </style>
+""", unsafe_allow_html=True)
+
+# Load image based on employee type and gender
 image = None
 caption = ""
 
@@ -92,9 +106,9 @@ elif employee_type == "Rider":
     image = Image.open("Rider_male.PNG")
     caption = "Rider Appearance"
 
+# Show image if matched
 if image:
     st.image(image, caption=caption, use_container_width=True)
-
 
 hygiene_fields = {}
 for field in [
