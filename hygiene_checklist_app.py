@@ -38,7 +38,7 @@ role_type = st.selectbox("🎭 Select Role Type", ["FOH", "BOH"]) if employee_ty
 
 # --- Section 2: Employee Info ---
 st.subheader("👤 Employee Details")
-emp_id = st.text_input("Employee ID")
+emp_id = st.number_input("Employee ID")
 emp_name = st.text_input("Employee Name")
 
 from PIL import Image
@@ -185,32 +185,58 @@ if signature_canvas.image_data is not None:
         st.image(manager_signature, caption="Manager Signature", use_container_width=True)
 
 
-# --- Submit Checklist ---
 if st.button("✅ Submit Checklist"):
-    if not manager_signed:
-        st.error("Please verify the checklist before submitting.")
-    else:
-        for group in [grooming_fields, safety_checks, documents_check, bike_inspection]:
-            for label, result in group.items():
-                if result["selection"] == "❌" and not result["remark"]:
-                    st.error(f"❗ Remark is required for ❌ in: {label}")
-                    st.stop()
+    # Collect all checklist dictionaries
+    checklist_groups = [selections, safety_checks, documents_check, bike_inspection]
+    incomplete_items = []
+    total_checked = 0
+    correct_checked = 0
 
-        data = {
-            "branch": branch,
-            "employee_type": employee_type,
-            "shift": shift_type,
-            "date": str(date),
-            "gender": gender,
-            "role_type": role_type if role_type else "",
-            "employee_id": emp_id,
-            "employee_name": emp_name,
-            "manager_name": manager_name,
-            "grooming": {k: v["selection"] for k, v in grooming_fields.items()},
-            "remarks": {k: v["remark"] for k, v in grooming_fields.items() if v["selection"] == "❌"},
-            "safety_checks": {k: v["selection"] for k, v in safety_checks.items()},
-            "documents": {k: v["selection"] for k, v in documents_check.items()},
-            "bike_inspection": {k: v["selection"] for k, v in bike_inspection.items()}
+    for group in checklist_groups:
+        for item, response in group.items():
+            # If using buttons, response will be like {"selection": "✅", "remark": "..."}
+            selected_value = response["selection"] if isinstance(response, dict) else response
+            if selected_value not in ["✅", "❌"]:
+                incomplete_items.append(item)
+            else:
+                total_checked += 1
+                if selected_value == "✅":
+                    correct_checked += 1
+
+    if incomplete_items:
+        st.error(f"❗ Please complete all items before submitting. Missing: {', '.join(incomplete_items)}")
+        st.stop()
+
+    if not manager_signature:
+        st.error("❗ Please sign in the Manager Verification section.")
+        st.stop()
+
+    # Score Calculation
+    score_percentage = round((correct_checked / total_checked) * 100, 2)
+    st.success("✅ Checklist submitted successfully!")
+    st.info(f"🧮 Final Hygiene Score: **{correct_checked} / {total_checked}** ({score_percentage}%)")
+
+    # Prepare payload
+    data = {
+        "branch": branch,
+        "employee_type": employee_type,
+        "shift": shift_type,
+        "date": str(date),
+        "gender": gender,
+        "role_type": role_type or "",
+        "employee_id": emp_id,
+        "employee_name": emp_name,
+        "manager_name": manager_name,
+        "grooming": selections,
+        "remarks": remarks_dict,
+        "safety_checks": safety_checks,
+        "documents": documents_check,
+        "bike_inspection": bike_inspection,
+        "score": {
+            "correct": correct_checked,
+            "total": total_checked,
+            "percentage": score_percentage
         }
-        submit_to_firebase(data, upscaled, bike_upscaled)
-        st.success("✅ Checklist submitted successfully!")
+    }
+
+    submit_to_firebase(data, upscaled, bike_upscaled, manager_signature)
