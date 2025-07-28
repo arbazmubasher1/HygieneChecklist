@@ -40,26 +40,21 @@ def upload_to_imgbb(image_file):
 
 import uuid
 
-def submit_to_firebase(data, rider_photo, bike_photo, manager_signature):
+def submit_to_firebase(data, image, bike_image=None, manager_signature=None):
     image_links = {}
 
-    # Upload Employee Photo
-    if rider_photo:
-        image_links["employee_photo_url"] = upload_to_imgbb(rider_photo)
+    if image:
+        image_links["employee_photo_url"] = upload_to_imgbb(image)
 
-    # Upload Bike Photo
-    if bike_photo:
-        image_links["bike_photo_url"] = upload_to_imgbb(bike_photo)
+    if bike_image:  # This will skip upload if it's None
+        image_links["bike_photo_url"] = upload_to_imgbb(bike_image)
 
-    # Upload Manager Signature (from BytesIO canvas object)
     if manager_signature:
-        image_links["signature_url"] = upload_to_imgbb(manager_signature)
+        image_links["manager_signature_url"] = upload_to_imgbb(manager_signature)
 
-    # Append image links to data
+    # Merge image links into the main data payload
     data.update(image_links)
 
-    # Store in Firestore under date/branch/employee_id
-    doc_path = f"{data['date']}/{data['branch']}/{data['employee_id']}_{str(uuid.uuid4())[:8]}"
-    db.document(f"checklists/{doc_path}").set(data)
-
-    print("✅ Data successfully submitted to Firebase.")
+    # Push to Firestore
+    db = firestore.client()
+    db.collection("daily_checklist").add(data)

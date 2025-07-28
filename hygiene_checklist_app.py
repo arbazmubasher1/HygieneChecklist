@@ -246,7 +246,4 @@ if st.button("✅ Submit Checklist"):
         }
     }
 
-    if bike_image:
-        submit_to_firebase(data, image, bike_image, manager_signature)
-    else:
-        submit_to_firebase(data, image, None, manager_signature)
+    submit_to_firebase(data, image, bike_image, manager_signature)
