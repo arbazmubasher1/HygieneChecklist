@@ -13,15 +13,20 @@ db = firestore.client()
 # ImgBB API Key from secrets
 IMGBB_API = st.secrets["imgbb"]["api_key"]
 
+from io import BytesIO
+
 def upload_to_imgbb(image_file):
     if image_file is None:
         return None
 
-    # If image_file has getvalue(), use it. Otherwise, assume it's already bytes.
-    try:
-        image_bytes = image_file.getvalue()
-    except AttributeError:
-        image_bytes = image_file
+    # Handle either uploaded image (bytes) or PIL image
+    if hasattr(image_file, "read"):  # Camera or file uploader
+        image_bytes = image_file.read()
+    else:
+        # Assume it's a PIL image, convert to bytes
+        buffer = BytesIO()
+        image_file.save(buffer, format="PNG")
+        image_bytes = buffer.getvalue()
 
     encoded = base64.b64encode(image_bytes).decode("utf-8")
     response = requests.post(
@@ -36,6 +41,7 @@ def upload_to_imgbb(image_file):
     else:
         st.error("Failed to upload image to ImgBB.")
         return None
+
 
 
 import uuid
