@@ -73,7 +73,7 @@ def checklist_buttons(label):
 
 
 # --- Section 3: Grooming Standards ---
-st.subheader("🧼 Grooming Standards")
+st.markdown("<h2 style='text-align: center;'>🧼 Grooming Standards</h2>", unsafe_allow_html=True)
 
 from PIL import Image
 
