@@ -43,7 +43,7 @@ hygiene_fields = {
     "Clean Black Pant": checklist_field("Clean Black Pant"),
     "Wear Black Shoes": checklist_field("Wear Black Shoes"),
     "Wear Black Socks": checklist_field("Wear Black Socks"),
-    "Facial Hair Grooming": checklist_field("Facial Hair Grooming"),
+    #"Facial Hair Grooming": checklist_field("Facial Hair Grooming"),
     "Nail Care": checklist_field("Nail Care"),
     "Oral Hygiene": checklist_field("Oral Hygiene")
 }
