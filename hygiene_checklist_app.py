@@ -68,8 +68,9 @@ if USE_CAMERA:
     rider_photo = st.camera_input("📸 Capture Employee Photo")
     bike_photo = st.camera_input("🏍️ Capture Bike Photo") if employee_type == "Rider" else None
 else:
-    rider_photo = st.file_uploader("📸 Upload Employee Photo", type=["jpg", "jpeg", "png"])
-    bike_photo = st.file_uploader("🏍️ Upload Bike Photo", type=["jpg", "jpeg", "png"]) if employee_type == "Rider" else None
+    #rider_photo = st.file_uploader("📸 Upload Employee Photo", type=["jpg", "jpeg", "png"])
+    #bike_photo = st.file_uploader("🏍️ Upload Bike Photo", type=["jpg", "jpeg", "png"]) if employee_type == "Rider" else None
+    print("Camera Not Found")
 
 # --- Unified Grooming Standards ---
 st.subheader("🧼 Grooming Standards")
