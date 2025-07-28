@@ -63,4 +63,4 @@ def submit_to_firebase(data, image, bike_image=None, manager_signature=None):
 
     # Push to Firestore
     db = firestore.client()
-    db.collection("daily_checklist").add(data)
+    db.collection("hygiene_checklist").add(data)
