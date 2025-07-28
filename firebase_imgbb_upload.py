@@ -16,7 +16,13 @@ IMGBB_API = st.secrets["imgbb"]["api_key"]
 def upload_to_imgbb(image_file):
     if image_file is None:
         return None
-    image_bytes = image_file.getvalue()
+
+    # If image_file has getvalue(), use it. Otherwise, assume it's already bytes.
+    try:
+        image_bytes = image_file.getvalue()
+    except AttributeError:
+        image_bytes = image_file
+
     encoded = base64.b64encode(image_bytes).decode("utf-8")
     response = requests.post(
         "https://api.imgbb.com/1/upload",
