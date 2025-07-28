@@ -63,7 +63,7 @@ if employee_type == "Rider":
     if bike_photo:
         bike_image = Image.open(bike_photo)
         bike_upscaled = bike_image.resize((600, 600))
-        st.image(bike_upscaled, caption="Upscaled Bike Photo", use_container_width=True)
+        #st.image(bike_upscaled, caption="Upscaled Bike Photo", use_container_width=True)
 
 
 # --- Display Reference Image ---
@@ -246,4 +246,4 @@ if st.button("✅ Submit Checklist"):
         }
     }
 
-    submit_to_firebase(data, upscaled, bike_upscaled, manager_signature)
+    submit_to_firebase(data, image, bike_image, manager_signature)
