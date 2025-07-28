@@ -64,7 +64,7 @@ hygiene_fields = {
     "Clean Shirt": checklist_buttons("Clean Shirt"),
     "Clean Black Pant": checklist_buttons("Clean Black Pant"),
     "Wear Black Shoes": checklist_buttons("Wear Black Shoes"),
-    "Wear Black Socks": cchecklist_buttons("Wear Black Socks"),
+    "Wear Black Socks": checklist_buttons("Wear Black Socks"),
     #"Facial Hair Grooming": checklist_buttons("Facial Hair Grooming"),
     "Nail Care": checklist_buttons("Nail Care"),
     "Oral Hygiene": checklist_buttons("Oral Hygiene")
