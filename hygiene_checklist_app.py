@@ -187,7 +187,7 @@ if signature_canvas.image_data is not None:
 
 if st.button("✅ Submit Checklist"):
     # Collect all checklist dictionaries
-    checklist_groups = [selections, safety_checks, documents_check, bike_inspection]
+    checklist_groups = [grooming_fields, safety_checks, documents_check, bike_inspection]
     incomplete_items = []
     total_checked = 0
     correct_checked = 0
@@ -227,7 +227,7 @@ if st.button("✅ Submit Checklist"):
         "employee_id": emp_id,
         "employee_name": emp_name,
         "manager_name": manager_name,
-        "grooming": selections,
+        "grooming": grooming_fields,
         "remarks": remarks_dict,
         "safety_checks": safety_checks,
         "documents": documents_check,
@@ -237,6 +237,7 @@ if st.button("✅ Submit Checklist"):
             "total": total_checked,
             "percentage": score_percentage
         }
+        
     }
 
     submit_to_firebase(data, upscaled, bike_upscaled, manager_signature)
