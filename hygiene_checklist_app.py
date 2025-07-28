@@ -163,7 +163,7 @@ if employee_type == "Rider":
 documents_check = {}
 if employee_type == "Rider":
     st.subheader("📄 Required Documents")
-    for field in ["Motorcycle License", "Registration Papers", "CNIC"]:
+    for field in ["Motorcycle License (Self-owned)", "Registration Papers", "CNIC"]:
         documents_check[field] = checklist_buttons(field)
     if branch in ["DHA-P6", "Wehshi Lab"]:
         documents_check["Society Gate Pass"] = checklist_buttons("Society Gate Pass")
