@@ -74,6 +74,20 @@ def checklist_buttons(label):
 # --- Section 3: Grooming Standards ---
 st.subheader("🧼 Grooming Standards")
 
+
+# --- Calculate Progress ---
+all_fields = [*hygiene_fields.items(), *safety_checks.items(), *documents_check.items(), *bike_inspection.items()]
+total_items = len(all_fields)
+filled_items = sum(1 for _, v in all_fields if v["selection"] in ["✅", "❌", "✍️"])
+
+progress = filled_items / total_items if total_items else 0
+
+st.markdown("### 📊 Checklist Completion Progress")
+st.progress(progress)
+st.write(f"**{filled_items} of {total_items} items completed ({int(progress * 100)}%)**")
+
+
+
 hygiene_fields = {}
 for field in [
     "Clean Shirt", "Clean Black Pant", "Wear Black Shoes", "Wear Black Socks",
@@ -126,18 +140,6 @@ if employee_type == "Rider":
         "Chain Cover", "Rear-View Mirrors", "Seat Carrier", "Leg Guard"
     ]:
         bike_inspection[field] = checklist_buttons(field)
-
-
-# --- Calculate Progress ---
-all_fields = [*hygiene_fields.items(), *safety_checks.items(), *documents_check.items(), *bike_inspection.items()]
-total_items = len(all_fields)
-filled_items = sum(1 for _, v in all_fields if v["selection"] in ["✅", "❌", "✍️"])
-
-progress = filled_items / total_items if total_items else 0
-
-st.markdown("### 📊 Checklist Completion Progress")
-st.progress(progress)
-st.write(f"**{filled_items} of {total_items} items completed ({int(progress * 100)}%)**")
 
 
 # --- Section 8: Manager Verification ---
