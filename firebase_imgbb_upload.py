@@ -31,23 +31,23 @@ def upload_to_imgbb(image_file):
         st.error("Failed to upload image to ImgBB.")
         return None
 
+
+import uuid
+
 def submit_to_firebase(data, rider_photo, bike_photo, manager_signature):
     image_links = {}
 
     # Upload Employee Photo
     if rider_photo:
-        emp_bytes = rider_photo.getvalue()
-        image_links["employee_photo_url"] = upload_to_imgbb(emp_bytes, f"emp_{uuid.uuid4()}")
-    
+        image_links["employee_photo_url"] = upload_to_imgbb(rider_photo)
+
     # Upload Bike Photo
     if bike_photo:
-        bike_bytes = bike_photo.getvalue()
-        image_links["bike_photo_url"] = upload_to_imgbb(bike_bytes, f"bike_{uuid.uuid4()}")
+        image_links["bike_photo_url"] = upload_to_imgbb(bike_photo)
 
-    # Upload Manager Signature (as base64 PNG from canvas)
+    # Upload Manager Signature (from BytesIO canvas object)
     if manager_signature:
-        signature_bytes = manager_signature.getvalue()
-        image_links["signature_url"] = upload_to_imgbb(signature_bytes, f"sign_{uuid.uuid4()}")
+        image_links["signature_url"] = upload_to_imgbb(manager_signature)
 
     # Append image links to data
     data.update(image_links)
