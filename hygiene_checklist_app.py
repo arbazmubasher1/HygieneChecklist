@@ -31,12 +31,13 @@ bike_photo = None
 if employee_type == "Rider":
     bike_photo = st.camera_input("🏍️ Capture Bike Photo")
 
-# --- Section 3: Personal Hygiene ---
-st.subheader("🧍 Personal Hygiene")
+# --- Unified Hygiene & Grooming Standards ---
+st.subheader("🧼 Grooming Standards")
 
 def checklist_field(label):
     return st.radio(label, ["✅", "❌", "✍️ Remark"], horizontal=True, key=label)
 
+# Always-shown hygiene fields
 hygiene_fields = {
     "Clean Shirt": checklist_field("Clean Shirt"),
     "Clean Black Pant": checklist_field("Clean Black Pant"),
@@ -47,40 +48,29 @@ hygiene_fields = {
     "Oral Hygiene": checklist_field("Oral Hygiene")
 }
 
-# --- Section 4: Grooming Standards (conditional logic) ---
-show_cap = False
-show_beard = False
-show_hair = False
-show_scarf = False
-
+# Conditional grooming fields
 if employee_type == "Rider":
-    show_cap = True
-    show_hair = True
-    show_beard = (gender == "Male")
-    show_scarf = (gender == "Female")
+    hygiene_fields.update({
+        "JJ Cap": checklist_field("JJ Cap"),
+        "Hair Grooming": checklist_field("Hair Grooming")
+    })
+    if gender == "Male":
+        hygiene_fields["Beard Grooming"] = checklist_field("Beard Grooming")
+    if gender == "Female":
+        hygiene_fields["Scarf / Cap Management"] = checklist_field("Scarf / Cap Management")
+
 elif employee_type == "Crew":
     if role_type == "FOH":
-        show_cap = True
-        show_hair = True
-        show_beard = (gender == "Male")
-        show_scarf = (gender == "Female")
+        hygiene_fields["JJ Cap"] = checklist_field("JJ Cap")
+        hygiene_fields["Hair Grooming"] = checklist_field("Hair Grooming")
+        if gender == "Male":
+            hygiene_fields["Beard Grooming"] = checklist_field("Beard Grooming")
+        elif gender == "Female":
+            hygiene_fields["Scarf / Cap Management"] = checklist_field("Scarf / Cap Management")
     elif role_type == "BOH":
-        show_cap = False
-        show_hair = False
-        show_beard = False
-        show_scarf = (gender == "Female")
+        if gender == "Female":
+            hygiene_fields["Scarf / Cap Management"] = checklist_field("Scarf / Cap Management")
 
-if show_cap or show_hair or show_beard or show_scarf:
-    st.subheader("🎩 Grooming Standards")
-
-if show_cap:
-    hygiene_fields["JJ Cap"] = checklist_field("JJ Cap")
-if show_hair:
-    hygiene_fields["Hair Grooming"] = checklist_field("Hair Grooming")
-if show_beard:
-    hygiene_fields["Beard Grooming"] = checklist_field("Beard Grooming")
-if show_scarf:
-    hygiene_fields["Scarf / Cap Management"] = checklist_field("Scarf / Cap Management")
 
 # --- Section 5: Safety Checks for Riders ---
 safety_checks = {}
