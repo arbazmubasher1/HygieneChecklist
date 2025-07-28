@@ -41,8 +41,30 @@ st.subheader("👤 Employee Details")
 emp_id = st.text_input("Employee ID")
 emp_name = st.text_input("Employee Name")
 
+from PIL import Image
+import io
+
+st.subheader("📸 Capture Photos")
+
+# Employee Photo
 rider_photo = st.camera_input("📸 Capture Employee Photo")
-bike_photo = st.camera_input("🏍️ Capture Bike Photo") if employee_type == "Rider" else None
+if rider_photo:
+    image = Image.open(rider_photo)
+    upscaled = image.resize((600, 600))  # Resize to 600x600 pixels
+    st.image(upscaled, caption="Upscaled Employee Photo", use_container_width=True)
+else:
+    upscaled = None  # In case you want to pass it forward later
+
+# Bike Photo (Only if Rider)
+bike_photo = None
+bike_upscaled = None
+if employee_type == "Rider":
+    bike_photo = st.camera_input("🏍️ Capture Bike Photo")
+    if bike_photo:
+        bike_image = Image.open(bike_photo)
+        bike_upscaled = bike_image.resize((600, 600))
+        st.image(bike_upscaled, caption="Upscaled Bike Photo", use_container_width=True)
+
 
 # --- Display Reference Image ---
 image = None
@@ -168,5 +190,5 @@ if st.button("✅ Submit Checklist"):
             "documents": {k: v["selection"] for k, v in documents_check.items()},
             "bike_inspection": {k: v["selection"] for k, v in bike_inspection.items()}
         }
-        submit_to_firebase(data, rider_photo, bike_photo)
+        submit_to_firebase(data, upscaled, bike_upscaled)
         st.success("✅ Checklist submitted successfully!")
