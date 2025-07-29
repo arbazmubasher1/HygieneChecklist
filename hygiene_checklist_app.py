@@ -38,7 +38,7 @@ role_type = st.selectbox("🎭 Select Role Type", ["FOH", "BOH"]) if employee_ty
 
 # --- Section 2: Employee Info ---
 st.subheader("👤 Employee Details")
-emp_id = st.number_input("Employee ID")
+emp_id = st.number_input("Employee ID", step=1, format="%d")
 emp_name = st.text_input("Employee Name")
 
 from PIL import Image
