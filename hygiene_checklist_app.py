@@ -87,26 +87,18 @@ def checklist_buttons(label):
     col1, col2, col3 = st.columns([1, 1, 2])
     key_prefix = label.replace(" ", "_")
 
-    # Initialize session state
+    # Initialize state
     if f"{key_prefix}_value" not in st.session_state:
         st.session_state[f"{key_prefix}_value"] = None
     if f"{key_prefix}_remark" not in st.session_state:
         st.session_state[f"{key_prefix}_remark"] = ""
 
-    # Define styles
-    def button_style(text, color, key, action):
-        btn = st.markdown(f"""
-            <button style="background-color: {color}; color: white; padding: 6px 16px;
-            border: none; border-radius: 6px; cursor: pointer; width: 100%;">
-                {text}
-            </button>
-        """, unsafe_allow_html=True)
-        if st.button(f"click_{key}", key=f"{key}_hidden"):
-            action()
-
     with col1:
         if st.session_state[f"{key_prefix}_value"] == "✅":
-            button_style("✅", "#2ECC71", f"{key_prefix}_yes", lambda: None)
+            st.markdown(
+                f"""<button style='background-color:#27ae60;color:white;width:100%;padding:8px;border:none;border-radius:5px;' disabled>✅</button>""",
+                unsafe_allow_html=True,
+            )
         else:
             if st.button("✅", key=f"{key_prefix}_yes"):
                 st.session_state[f"{key_prefix}_value"] = "✅"
@@ -114,7 +106,10 @@ def checklist_buttons(label):
 
     with col2:
         if st.session_state[f"{key_prefix}_value"] == "❌":
-            button_style("❌", "#E74C3C", f"{key_prefix}_no", lambda: None)
+            st.markdown(
+                f"""<button style='background-color:#c0392b;color:white;width:100%;padding:8px;border:none;border-radius:5px;' disabled>❌</button>""",
+                unsafe_allow_html=True,
+            )
         else:
             if st.button("❌", key=f"{key_prefix}_no"):
                 st.session_state[f"{key_prefix}_value"] = "❌"
@@ -129,6 +124,7 @@ def checklist_buttons(label):
         "selection": st.session_state[f"{key_prefix}_value"],
         "remark": st.session_state[f"{key_prefix}_remark"]
     }
+
 
 
 # --- Grooming Standards ---
