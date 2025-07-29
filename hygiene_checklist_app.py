@@ -9,34 +9,20 @@ st.title("🧼 Daily Inspection: Crew & Rider Hygiene Readiness Checklist")
 
 # --- Optional CSS to resize all images ---
 # Limit image height
-# --- CSS for styled buttons ---
 st.markdown("""
     <style>
-    .custom-button {
-        padding: 0.5em 1.5em;
-        margin-right: 1em;
-        font-weight: bold;
-        font-size: 16px;
-        border: 2px solid transparent;
-        border-radius: 8px;
-        cursor: pointer;
-    }
-    .selected-yes {
-        background-color: #4CAF50;
-        color: white;
-        border-color: #4CAF50;
-    }
-    .selected-no {
-        background-color: #f44336;
-        color: white;
-        border-color: #f44336;
-    }
-    .unselected {
-        background-color: #f0f0f0;
-        color: #333;
-    }
+        img {
+            max-height: 400px;
+            height: auto;
+            width: auto;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+            object-fit: contain;
+        }
     </style>
 """, unsafe_allow_html=True)
+
 
 
 # --- Section 1: Filters ---
@@ -98,15 +84,13 @@ if image:
 # --- Helper: Button Input + Remarks ---
 def checklist_buttons(label):
     st.markdown(f"**{label}**")
+    col1, col2, col3 = st.columns([1, 1, 2])
     key_prefix = label.replace(" ", "_")
 
-    # Session state init
     if f"{key_prefix}_value" not in st.session_state:
-        st.session_state[f"{key_prefix}_value"] = ""
+        st.session_state[f"{key_prefix}_value"] = None
     if f"{key_prefix}_remark" not in st.session_state:
         st.session_state[f"{key_prefix}_remark"] = ""
-
-    col1, col2 = st.columns(2)
 
     with col1:
         if st.button("✅", key=f"{key_prefix}_yes"):
@@ -117,27 +101,15 @@ def checklist_buttons(label):
         if st.button("❌", key=f"{key_prefix}_no"):
             st.session_state[f"{key_prefix}_value"] = "❌"
 
-    # Styled indicators
-    selection = st.session_state[f"{key_prefix}_value"]
-    yes_style = "selected-yes" if selection == "✅" else "unselected"
-    no_style = "selected-no" if selection == "❌" else "unselected"
-
-    st.markdown(f"""
-        <div style='margin-top: -50px; margin-bottom: 10px;'>
-            <button class='custom-button {yes_style}' disabled>✅</button>
-            <button class='custom-button {no_style}' disabled>❌</button>
-        </div>
-    """, unsafe_allow_html=True)
-
-    # Remarks input if ❌
-    remark = ""
-    if selection == "❌":
-        remark = st.text_input(f"❗ Remarks for {label}", key=f"{key_prefix}_remark_input")
-        st.session_state[f"{key_prefix}_remark"] = remark
+    with col3:
+        if st.session_state[f"{key_prefix}_value"] == "❌":
+            st.session_state[f"{key_prefix}_remark"] = st.text_input(
+                f"❗ Remarks for {label}", key=f"{key_prefix}_remark_input"
+            )
 
     return {
-        "selection": selection,
-        "remark": st.session_state.get(f"{key_prefix}_remark", "")
+        "selection": st.session_state[f"{key_prefix}_value"],
+        "remark": st.session_state[f"{key_prefix}_remark"]
     }
 
 # --- Grooming Standards ---
