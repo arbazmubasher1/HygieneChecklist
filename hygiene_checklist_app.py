@@ -84,47 +84,27 @@ if image:
 # --- Helper: Button Input + Remarks ---
 def checklist_buttons(label):
     st.markdown(f"**{label}**")
-    col1, col2, col3 = st.columns([1, 1, 2])
+    col1, col2 = st.columns([2, 3])
     key_prefix = label.replace(" ", "_")
 
-    # Initialize state
-    if f"{key_prefix}_value" not in st.session_state:
-        st.session_state[f"{key_prefix}_value"] = None
-    if f"{key_prefix}_remark" not in st.session_state:
-        st.session_state[f"{key_prefix}_remark"] = ""
+    # Create a radio button with emojis
+    selection = col1.radio(
+        "",
+        options=["", "✅", "❌"],
+        index=["", "✅", "❌"].index(st.session_state.get(f"{key_prefix}_value", "")),
+        key=f"{key_prefix}_radio",
+        horizontal=True,
+    )
+    st.session_state[f"{key_prefix}_value"] = selection
 
-    # Render color-changing buttons
-    with col1:
-        if st.session_state[f"{key_prefix}_value"] == "✅":
-            st.markdown(
-                f"<div style='background-color:#27ae60;color:white;border-radius:5px;padding:8px;text-align:center;'>✅</div>",
-                unsafe_allow_html=True,
-            )
-        else:
-            if st.button("✅", key=f"{key_prefix}_yes_btn"):
-                st.session_state[f"{key_prefix}_value"] = "✅"
-                st.session_state[f"{key_prefix}_remark"] = ""
-
-    with col2:
-        if st.session_state[f"{key_prefix}_value"] == "❌":
-            st.markdown(
-                f"<div style='background-color:#e74c3c;color:white;border-radius:5px;padding:8px;text-align:center;'>❌</div>",
-                unsafe_allow_html=True,
-            )
-        else:
-            if st.button("❌", key=f"{key_prefix}_no_btn"):
-                st.session_state[f"{key_prefix}_value"] = "❌"
-
-    # Text input for ❌ remarks
-    with col3:
-        if st.session_state[f"{key_prefix}_value"] == "❌":
-            st.session_state[f"{key_prefix}_remark"] = st.text_input(
-                f"❗ Remarks for {label}", key=f"{key_prefix}_remark_input"
-            )
+    remark = ""
+    if selection == "❌":
+        remark = col2.text_input(f"❗ Remarks for {label}", key=f"{key_prefix}_remark_input")
+    st.session_state[f"{key_prefix}_remark"] = remark
 
     return {
-        "selection": st.session_state[f"{key_prefix}_value"],
-        "remark": st.session_state[f"{key_prefix}_remark"]
+        "selection": selection,
+        "remark": remark
     }
 
 
