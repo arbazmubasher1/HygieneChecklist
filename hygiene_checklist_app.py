@@ -90,21 +90,21 @@ if image:
 
 # --- Helper: Button Input + Remarks ---
 def checklist_buttons(label):
-    st.markdown(f"**{label}**")
     key_prefix = label.replace(" ", "_")
+    st.markdown(f"**{label}**")
 
-    # Selection dropdown
-    selection = st.selectbox(
-        f"Select for {label}",
+    # Radio buttons: empty choice for initial state
+    selection = st.radio(
+        "",
         options=["", "✅", "❌"],
-        index=0,
-        key=f"{key_prefix}_selectbox"
+        key=f"{key_prefix}_radio",
+        horizontal=True,
     )
 
-    # If ❌ selected, ask for remarks
+    # If ❌ selected, show remarks input
     remark = ""
     if selection == "❌":
-        remark = st.text_input(f"❗ Remarks for {label}", key=f"{key_prefix}_remark_input")
+        remark = st.text_input(f"❗ Remarks for {label}", key=f"{key_prefix}_remark")
 
     return {
         "selection": selection,
