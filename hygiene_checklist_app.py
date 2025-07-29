@@ -87,19 +87,37 @@ def checklist_buttons(label):
     col1, col2, col3 = st.columns([1, 1, 2])
     key_prefix = label.replace(" ", "_")
 
+    # Initialize session state
     if f"{key_prefix}_value" not in st.session_state:
         st.session_state[f"{key_prefix}_value"] = None
     if f"{key_prefix}_remark" not in st.session_state:
         st.session_state[f"{key_prefix}_remark"] = ""
 
+    # Define styles
+    def button_style(text, color, key, action):
+        btn = st.markdown(f"""
+            <button style="background-color: {color}; color: white; padding: 6px 16px;
+            border: none; border-radius: 6px; cursor: pointer; width: 100%;">
+                {text}
+            </button>
+        """, unsafe_allow_html=True)
+        if st.button(f"click_{key}", key=f"{key}_hidden"):
+            action()
+
     with col1:
-        if st.button("✅", key=f"{key_prefix}_yes"):
-            st.session_state[f"{key_prefix}_value"] = "✅"
-            st.session_state[f"{key_prefix}_remark"] = ""
+        if st.session_state[f"{key_prefix}_value"] == "✅":
+            button_style("✅", "#2ECC71", f"{key_prefix}_yes", lambda: None)
+        else:
+            if st.button("✅", key=f"{key_prefix}_yes"):
+                st.session_state[f"{key_prefix}_value"] = "✅"
+                st.session_state[f"{key_prefix}_remark"] = ""
 
     with col2:
-        if st.button("❌", key=f"{key_prefix}_no"):
-            st.session_state[f"{key_prefix}_value"] = "❌"
+        if st.session_state[f"{key_prefix}_value"] == "❌":
+            button_style("❌", "#E74C3C", f"{key_prefix}_no", lambda: None)
+        else:
+            if st.button("❌", key=f"{key_prefix}_no"):
+                st.session_state[f"{key_prefix}_value"] = "❌"
 
     with col3:
         if st.session_state[f"{key_prefix}_value"] == "❌":
@@ -111,6 +129,7 @@ def checklist_buttons(label):
         "selection": st.session_state[f"{key_prefix}_value"],
         "remark": st.session_state[f"{key_prefix}_remark"]
     }
+
 
 # --- Grooming Standards ---
 st.markdown("<h2 style='text-align: center;'>🧼 Grooming Standards</h2>", unsafe_allow_html=True)
