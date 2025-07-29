@@ -23,7 +23,14 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-
+st.markdown("""
+    <style>
+    .stSelectbox>div[data-baseweb="select"] {
+        border-radius: 6px;
+        border: 1px solid #D3D3D3;
+    }
+    </style>
+""", unsafe_allow_html=True)
 
 # --- Section 1: Filters ---
 branch = st.selectbox("📍 Select Branch", [
@@ -84,32 +91,24 @@ if image:
 # --- Helper: Button Input + Remarks ---
 def checklist_buttons(label):
     st.markdown(f"**{label}**")
-    col1, col2, col3 = st.columns([1, 1, 2])
     key_prefix = label.replace(" ", "_")
 
-    if f"{key_prefix}_value" not in st.session_state:
-        st.session_state[f"{key_prefix}_value"] = None
-    if f"{key_prefix}_remark" not in st.session_state:
-        st.session_state[f"{key_prefix}_remark"] = ""
+    # Selection dropdown
+    selection = st.selectbox(
+        f"Select for {label}",
+        options=["", "✅", "❌"],
+        index=0,
+        key=f"{key_prefix}_selectbox"
+    )
 
-    with col1:
-        if st.button("✅", key=f"{key_prefix}_yes"):
-            st.session_state[f"{key_prefix}_value"] = "✅"
-            st.session_state[f"{key_prefix}_remark"] = ""
-
-    with col2:
-        if st.button("❌", key=f"{key_prefix}_no"):
-            st.session_state[f"{key_prefix}_value"] = "❌"
-
-    with col3:
-        if st.session_state[f"{key_prefix}_value"] == "❌":
-            st.session_state[f"{key_prefix}_remark"] = st.text_input(
-                f"❗ Remarks for {label}", key=f"{key_prefix}_remark_input"
-            )
+    # If ❌ selected, ask for remarks
+    remark = ""
+    if selection == "❌":
+        remark = st.text_input(f"❗ Remarks for {label}", key=f"{key_prefix}_remark_input")
 
     return {
-        "selection": st.session_state[f"{key_prefix}_value"],
-        "remark": st.session_state[f"{key_prefix}_remark"]
+        "selection": selection,
+        "remark": remark
     }
 
 # --- Grooming Standards ---
@@ -194,13 +193,19 @@ if st.button("✅ Submit Checklist"):
 
     for group in checklist_groups:
         for item, response in group.items():
-            selected_value = response["selection"] if isinstance(response, dict) else response
+            selected_value = response["selection"]
+            remark_value = response["remark"]
+
             if selected_value not in ["✅", "❌"]:
                 incomplete_items.append(item)
+            elif selected_value == "❌" and not remark_value.strip():
+                st.error(f"❗ Remarks are required for ❌ selection: {item}")
+                st.stop()
             else:
                 total_checked += 1
                 if selected_value == "✅":
                     correct_checked += 1
+
 
     if incomplete_items:
         st.error(f"❗ Please complete all items before submitting. Missing: {', '.join(incomplete_items)}")
