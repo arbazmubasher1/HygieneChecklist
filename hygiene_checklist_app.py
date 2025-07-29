@@ -87,52 +87,35 @@ def checklist_buttons(label):
     col1, col2, col3 = st.columns([1, 1, 2])
     key_prefix = label.replace(" ", "_")
 
-    query_params = st.query_params
-
-    # Initialize
+    # Initialize state
     if f"{key_prefix}_value" not in st.session_state:
         st.session_state[f"{key_prefix}_value"] = None
     if f"{key_prefix}_remark" not in st.session_state:
         st.session_state[f"{key_prefix}_remark"] = ""
 
-    # Check if query param is present to update state
-    if query_params.get("action") == key_prefix + "_yes":
-        st.session_state[f"{key_prefix}_value"] = "✅"
-        st.session_state[f"{key_prefix}_remark"] = ""
-        st.experimental_set_query_params()  # Clear params
-    elif query_params.get("action") == key_prefix + "_no":
-        st.session_state[f"{key_prefix}_value"] = "❌"
-        st.experimental_set_query_params()
-
-    # YES button
+    # Render color-changing buttons
     with col1:
-        color = "#27ae60" if st.session_state[f"{key_prefix}_value"] == "✅" else "#bdc3c7"
-        st.markdown(
-            f"""
-            <a href="?action={key_prefix}_yes">
-                <button style='background-color:{color};color:white;width:100%;padding:8px;border:none;border-radius:5px;'>
-                    ✅
-                </button>
-            </a>
-            """,
-            unsafe_allow_html=True
-        )
+        if st.session_state[f"{key_prefix}_value"] == "✅":
+            st.markdown(
+                f"<div style='background-color:#27ae60;color:white;border-radius:5px;padding:8px;text-align:center;'>✅</div>",
+                unsafe_allow_html=True,
+            )
+        else:
+            if st.button("✅", key=f"{key_prefix}_yes_btn"):
+                st.session_state[f"{key_prefix}_value"] = "✅"
+                st.session_state[f"{key_prefix}_remark"] = ""
 
-    # NO button
     with col2:
-        color = "#c0392b" if st.session_state[f"{key_prefix}_value"] == "❌" else "#bdc3c7"
-        st.markdown(
-            f"""
-            <a href="?action={key_prefix}_no">
-                <button style='background-color:{color};color:white;width:100%;padding:8px;border:none;border-radius:5px;'>
-                    ❌
-                </button>
-            </a>
-            """,
-            unsafe_allow_html=True
-        )
+        if st.session_state[f"{key_prefix}_value"] == "❌":
+            st.markdown(
+                f"<div style='background-color:#e74c3c;color:white;border-radius:5px;padding:8px;text-align:center;'>❌</div>",
+                unsafe_allow_html=True,
+            )
+        else:
+            if st.button("❌", key=f"{key_prefix}_no_btn"):
+                st.session_state[f"{key_prefix}_value"] = "❌"
 
-    # Show remark input if ❌
+    # Text input for ❌ remarks
     with col3:
         if st.session_state[f"{key_prefix}_value"] == "❌":
             st.session_state[f"{key_prefix}_remark"] = st.text_input(
