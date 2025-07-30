@@ -2,7 +2,7 @@ import streamlit as st
 from datetime import datetime
 from PIL import Image
 from streamlit_drawable_canvas import st_canvas
-from firebase_imgbb_upload import submit_to_firebase  # Your module
+from firebase_imgbb_upload import upload_to_imgbb, submit_to_firebase
 
 # === CONFIG ===
 st.set_page_config(page_title="Hygiene Checklist", layout="wide")
@@ -38,22 +38,27 @@ st.subheader("👤 Employee Details")
 emp_id = st.number_input("Employee ID", step=1, format="%d", key="emp_id")
 emp_name = st.text_input("Employee Name", key="emp_name")
 
-# === SECTION 3: PHOTO CAPTURE ===
+# === SECTION 3: PHOTO CAPTURE WITH IMMEDIATE UPLOAD ===
 st.subheader("📸 Capture Photos")
 
 def photo_capture_section(label, session_key):
     placeholder = st.empty()
 
-    if st.session_state.get(f"{session_key}_uploaded"):
-        st.success(f"{label} photo captured.")
+    if st.session_state.get(f"{session_key}_url"):
+        st.success(f"{label} photo uploaded ✅")
         return
 
     if placeholder.button(f"📸 Take {label} Photo", key=f"{session_key}_btn"):
         cam = placeholder.camera_input(f"Capture {label} Photo", key=f"{session_key}_cam")
         if cam:
             img = Image.open(cam).resize((600, 600))
-            st.session_state[f"{session_key}_image"] = img
-            st.session_state[f"{session_key}_uploaded"] = True
+            st.info(f"Uploading {label.lower()} photo...")
+            url = upload_to_imgbb(img)
+            if url:
+                st.session_state[f"{session_key}_url"] = url
+                st.success(f"{label} photo uploaded ✅")
+            else:
+                st.error(f"Failed to upload {label.lower()} photo.")
             placeholder.empty()
 
 photo_capture_section("Employee", "employee_photo")
@@ -196,8 +201,9 @@ if st.button("✅ Submit Checklist"):
         st.error("❗ Please sign in the Manager Verification section.")
         st.stop()
 
-    image = st.session_state.get("employee_photo_image", None)
-    bike_upscaled = st.session_state.get("bike_photo_image", None)
+    # Get uploaded image URLs from session_state
+    employee_url = st.session_state.get("employee_photo_url")
+    bike_url = st.session_state.get("bike_photo_url")
 
     score_percentage = round((correct_checked / total_checked) * 100, 2)
     remarks_dict = {
@@ -229,7 +235,10 @@ if st.button("✅ Submit Checklist"):
         }
     }
 
-    submit_to_firebase(data, image, bike_upscaled, manager_signature)
+    submit_to_firebase(data, employee_url, bike_url, manager_signature)
 
-    # Force full page refresh
+    st.success("✅ Checklist submitted successfully!")
+    st.info(f"🧮 Final Hygiene Score: **{correct_checked} / {total_checked}** ({score_percentage}%)")
+
+    # Force full refresh
     st.markdown("<meta http-equiv='refresh' content='0'>", unsafe_allow_html=True)
