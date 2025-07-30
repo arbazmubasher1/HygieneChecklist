@@ -19,14 +19,13 @@ def upload_to_imgbb(image_file):
     if image_file is None:
         return None
 
-    # Handle either uploaded image (bytes) or PIL image
-    if hasattr(image_file, "read"):  # Camera or file uploader
-        image_bytes = image_file.read()
-    else:
-        # Assume it's a PIL image, convert to bytes
+    try:
         buffer = BytesIO()
         image_file.save(buffer, format="PNG")
         image_bytes = buffer.getvalue()
+    except AttributeError:
+        # It's likely a file-like object from camera input
+        image_bytes = image_file.read()
 
     encoded = base64.b64encode(image_bytes).decode("utf-8")
     response = requests.post(
@@ -41,7 +40,6 @@ def upload_to_imgbb(image_file):
     else:
         st.error("Failed to upload image to ImgBB.")
         return None
-
 
 
 import uuid
