@@ -3,6 +3,8 @@ from datetime import datetime
 from PIL import Image
 from streamlit_drawable_canvas import st_canvas
 from firebase_imgbb_upload import upload_to_imgbb, submit_to_firebase
+from datetime import datetime, timezone
+
 
 # === CONFIG ===
 st.set_page_config(page_title="Hygiene Checklist", layout="wide")
@@ -222,7 +224,6 @@ if st.button("✅ Submit Checklist"):
         for item, response in group.items()
         if response.get("selection") == "❌"
     }
-
     data = {
         "branch": branch,
         "employee_type": employee_type,
@@ -242,13 +243,15 @@ if st.button("✅ Submit Checklist"):
             "correct": correct_checked,
             "total": total_checked,
             "percentage": score_percentage
-        }
+        },
+        "submitted_at": datetime.now(timezone.utc).isoformat()
     }
 
     submit_to_firebase(data, employee_url, bike_url, manager_signature)
 
     st.success("✅ Checklist submitted successfully!")
     st.info(f"🧮 Final Hygiene Score: **{correct_checked} / {total_checked}** ({score_percentage}%)")
-
+    import time
+    time.sleep(10)
     # Force full refresh
     st.markdown("<meta http-equiv='refresh' content='0'>", unsafe_allow_html=True)
