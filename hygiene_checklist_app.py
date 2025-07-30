@@ -253,4 +253,9 @@ if st.button("✅ Submit Checklist"):
     }
 
     submit_to_firebase(data, image, bike_upscaled, manager_signature)
-st.rerun()
+        # Clear all session state (optional)
+    for key in st.session_state.keys():
+        del st.session_state[key]
+
+    st.success("✅ Submitted and reset the form!")
+    st.experimental_rerun()
