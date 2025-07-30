@@ -253,4 +253,4 @@ if st.button("✅ Submit Checklist"):
     }
 
     submit_to_firebase(data, image, bike_upscaled, manager_signature)
-    st.rerun()
+st.rerun()
