@@ -57,35 +57,23 @@ def upload_to_imgbb(image_file):
         return None
 
 # === Submit Final Payload to Firestore ===
-def submit_to_firebase(data, image, bike_image=None, manager_signature=None):
-    print("📦 Preparing to submit to Firebase...")
-
+def submit_to_firebase(data, employee_url=None, bike_url=None, signature_img=None):
     image_links = {}
 
-    if image:
-        print("🖼️ Uploading employee photo...")
-        image_links["employee_photo_url"] = upload_to_imgbb(image)
+    if employee_url:
+        image_links["employee_photo_url"] = employee_url
 
-    if bike_image:
-        print("🏍️ Uploading bike photo...")
-        image_links["bike_photo_url"] = upload_to_imgbb(bike_image)
+    if bike_url:
+        image_links["bike_photo_url"] = bike_url
 
-    if manager_signature:
-        print("✍️ Uploading manager signature...")
-        image_links["manager_signature_url"] = upload_to_imgbb(manager_signature)
+    if signature_img:
+        image_links["manager_signature_url"] = upload_to_imgbb(signature_img)
 
-    # Merge into main payload
     data.update(image_links)
 
-    # Log final data for inspection
-    print("📤 Final Firebase payload:")
-    for k, v in data.items():
-        print(f" - {k}: {v if isinstance(v, (str, int, float)) else '[object]'}")
-
-    # Push to Firestore
     try:
         db.collection("hygiene_checklist").add(data)
-        print("✅ Successfully submitted to Firestore.")
+        print("✅ Data pushed to Firebase")
     except Exception as e:
-        print("❌ Error pushing to Firestore:", e)
-        st.error("Failed to submit data to Firebase.")
+        st.error("❌ Failed to upload to Firebase")
+        print(e)
