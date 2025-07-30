@@ -233,10 +233,7 @@ if st.button("✅ Submit Checklist"):
     }
 
     submit_to_firebase(data, image, bike_upscaled, manager_signature)
-
-    # Reset state
-    keys_to_clear = list(st.session_state.keys())
-    for key in keys_to_clear:
-        del st.session_state[key]
-
-    st.rerun()
+    st.markdown("""
+    <script>
+        window.location.reload();
+    </script>""", unsafe_allow_html=True)
