@@ -234,6 +234,5 @@ if st.button("✅ Submit Checklist"):
 
     submit_to_firebase(data, image, bike_upscaled, manager_signature)
     st.markdown("""
-    <script>
-        window.location.reload();
-    </script>""", unsafe_allow_html=True)
+        <meta http-equiv="refresh" content="0">
+    """, unsafe_allow_html=True)
