@@ -49,7 +49,8 @@ def photo_capture_section(label, session_key):
     cam = st.camera_input(f"📸 Capture {label} Photo", key=f"{session_key}_cam")
 
     if cam:
-        img = Image.open(cam).resize((600, 600))
+        img = Image.open(cam)
+        #.resize((600, 600))
         st.info(f"Uploading {label.lower()} photo...")
         url = upload_to_imgbb(img)
         if url:
