@@ -1,14 +1,14 @@
 import streamlit as st
 from datetime import datetime
-from firebase_imgbb_upload import submit_to_firebase  # Make sure this file exists
+from firebase_imgbb_upload import submit_to_firebase  # Ensure this exists
 from PIL import Image
+from streamlit_drawable_canvas import st_canvas
 
+# --- Config ---
 st.set_page_config(page_title="Hygiene Checklist", layout="wide")
 st.title("🧼 Daily Inspection: Crew & Rider Hygiene Readiness Checklist")
 
-
-# --- Optional CSS to resize all images ---
-# Limit image height
+# --- CSS ---
 st.markdown("""
     <style>
         img {
@@ -23,9 +23,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-
-
-# --- Section 1: Filters ---
+# --- Filters ---
 branch = st.selectbox("📍 Select Branch", [
     "DHA-P6", "DHA-CC", "Cloud Kitchen", "Johar Town", "Bahria", "Wehshi Lab", "Emporium"
 ])
@@ -34,54 +32,44 @@ employee_type = st.selectbox("👷 Select Employee Type", ["Crew", "Rider"])
 shift_type = st.selectbox("🕒 Select Shift", ["Morning", "Lunch", "Dinner", "Closing"])
 date = st.date_input("📅 Date", value=datetime.today())
 gender = st.selectbox("🛋 Select Gender", ["Male", "Female"])
-role_type = st.selectbox("🎭 Select Role Type", ["FOH", "BOH"]) if employee_type == "Crew" else None
+role_type = st.selectbox("🎭 Select Role Type", ["FOH", "BOH"], key="role_type") if employee_type == "Crew" else ""
 
-# --- Section 2: Employee Info ---
+# --- Employee Info ---
 st.subheader("👤 Employee Details")
-emp_id = st.number_input("Employee ID", step=1, format="%d")
-emp_name = st.text_input("Employee Name")
+emp_id = st.number_input("Employee ID", step=1, format="%d", key="emp_id")
+emp_name = st.text_input("Employee Name", key="emp_name")
 
-from PIL import Image
-import io
-
+# --- Photo Capture ---
 st.subheader("📸 Capture Photos")
-
-# Employee Photo
-rider_photo = st.camera_input("📸 Capture Employee Photo")
-if rider_photo:
-    image = Image.open(rider_photo)
-    upscaled = image.resize((600, 600))  # Resize to 600x600 pixels
-    st.image(upscaled, caption="Upscaled Employee Photo", use_container_width=True)
+employee_photo = st.camera_input("📸 Capture Employee Photo", key="employee_photo")
+if employee_photo:
+    image = Image.open(employee_photo).resize((600, 600))
+    st.image(image, caption="Upscaled Employee Photo", use_container_width=True)
 else:
-    upscaled = None  # In case you want to pass it forward later
+    image = None
 
-# Bike Photo (Only if Rider)
-bike_photo = None
 bike_upscaled = None
 if employee_type == "Rider":
-    bike_photo = st.camera_input("🏍️ Capture Bike Photo")
+    bike_photo = st.camera_input("🏍️ Capture Bike Photo", key="bike_photo")
     if bike_photo:
-        bike_image = Image.open(bike_photo)
-        bike_upscaled = bike_image.resize((600, 600))
-        #st.image(bike_upscaled, caption="Upscaled Bike Photo", use_container_width=True)
+        bike_upscaled = Image.open(bike_photo).resize((600, 600))
 
-
-# --- Display Reference Image ---
-image = None
+# --- Reference Image ---
+reference_image = None
 caption = ""
 if employee_type == "Crew" and gender == "Male":
-    image = Image.open("Crew_male.PNG")
+    reference_image = Image.open("Crew_male.PNG")
     caption = "Crew Male Appearance"
 elif employee_type == "Crew" and gender == "Female":
-    image = Image.open("Crew_female.PNG")
+    reference_image = Image.open("Crew_female.PNG")
     caption = "Crew Female Appearance"
 elif employee_type == "Rider":
-    image = Image.open("Rider_male.PNG")
+    reference_image = Image.open("Rider_male.PNG")
     caption = "Rider Appearance"
-if image:
-    st.image(image, caption=caption, use_container_width=True)
+if reference_image:
+    st.image(reference_image, caption=caption, use_container_width=True)
 
-# --- Helper: Button Input + Remarks ---
+# --- Checklist Helper ---
 def checklist_buttons(label):
     st.markdown(f"**{label}**")
     col1, col2, col3 = st.columns([1, 1, 2])
@@ -128,10 +116,11 @@ if gender == "Female":
 for field in base_grooming:
     grooming_fields[field] = checklist_buttons(field)
 
-# --- Rider Specific Sections ---
+# --- Rider Specific ---
 safety_checks = {}
 documents_check = {}
 bike_inspection = {}
+
 if employee_type == "Rider":
     st.subheader("🛡️ Rider Safety Checks")
     for field in ["Helmet", "Mobile Phone", "Handfree", "Gloves"]:
@@ -158,16 +147,13 @@ progress = int((filled / total) * 100) if total else 0
 st.markdown("### 📊 Checklist Completion Progress")
 st.progress(progress / 100, text=f"{filled} / {total} items completed")
 
-# --- Manager Verification ---
-from streamlit_drawable_canvas import st_canvas
-
+# --- Signature ---
 st.subheader("🧾 Manager Verification")
-
-manager_name = st.text_input("Manager Name (optional)")
+manager_name = st.text_input("Manager Name (optional)", key="manager_name")
 
 st.markdown("✍️ **Please sign below:**")
 signature_canvas = st_canvas(
-    fill_color="rgba(255, 255, 255, 0)",  # Transparent background
+    fill_color="rgba(255, 255, 255, 0)",
     stroke_width=2,
     stroke_color="#000000",
     background_color="#ffffff",
@@ -176,17 +162,15 @@ signature_canvas = st_canvas(
     key="signature"
 )
 
-# Save the signature image if drawn
 manager_signature = None
 if signature_canvas.image_data is not None:
-    signature_image = Image.fromarray(signature_canvas.image_data.astype('uint8'), 'RGBA')
-    if signature_image.getbbox():  # Check if something is drawn
-        manager_signature = signature_image
+    sig_image = Image.fromarray(signature_canvas.image_data.astype('uint8'), 'RGBA')
+    if sig_image.getbbox():
+        manager_signature = sig_image
         st.image(manager_signature, caption="Manager Signature", use_container_width=True)
 
-
+# --- Submit ---
 if st.button("✅ Submit Checklist"):
-    # Collect all checklist dictionaries
     checklist_groups = [grooming_fields, safety_checks, documents_check, bike_inspection]
     incomplete_items = []
     total_checked = 0
@@ -207,7 +191,6 @@ if st.button("✅ Submit Checklist"):
                 if selected_value == "✅":
                     correct_checked += 1
 
-
     if incomplete_items:
         st.error(f"❗ Please complete all items before submitting. Missing: {', '.join(incomplete_items)}")
         st.stop()
@@ -216,12 +199,10 @@ if st.button("✅ Submit Checklist"):
         st.error("❗ Please sign in the Manager Verification section.")
         st.stop()
 
-    # Score Calculation
     score_percentage = round((correct_checked / total_checked) * 100, 2)
     st.success("✅ Checklist submitted successfully!")
     st.info(f"🧮 Final Hygiene Score: **{correct_checked} / {total_checked}** ({score_percentage}%)")
 
-    # Build remarks from ❌ selections
     remarks_dict = {
         item: response["remark"]
         for group in checklist_groups
@@ -229,14 +210,13 @@ if st.button("✅ Submit Checklist"):
         if isinstance(response, dict) and response.get("selection") == "❌"
     }
 
-    # Prepare payload
     data = {
         "branch": branch,
         "employee_type": employee_type,
         "shift": shift_type,
         "date": str(date),
         "gender": gender,
-        "role_type": role_type or "",
+        "role_type": role_type,
         "employee_id": emp_id,
         "employee_name": emp_name,
         "manager_name": manager_name,
@@ -253,9 +233,10 @@ if st.button("✅ Submit Checklist"):
     }
 
     submit_to_firebase(data, image, bike_upscaled, manager_signature)
-        # Clear all session state (optional)
-    for key in st.session_state.keys():
+
+    # Reset state
+    keys_to_clear = list(st.session_state.keys())
+    for key in keys_to_clear:
         del st.session_state[key]
 
-    st.success("✅ Submitted and reset the form!")
     st.rerun()
