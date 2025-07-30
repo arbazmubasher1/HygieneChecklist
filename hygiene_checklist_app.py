@@ -42,24 +42,22 @@ emp_name = st.text_input("Employee Name", key="emp_name")
 st.subheader("📸 Capture Photos")
 
 def photo_capture_section(label, session_key):
-    placeholder = st.empty()
-
     if st.session_state.get(f"{session_key}_url"):
         st.success(f"{label} photo uploaded ✅")
         return
 
-    if placeholder.button(f"📸 Take {label} Photo", key=f"{session_key}_btn"):
-        cam = placeholder.camera_input(f"Capture {label} Photo", key=f"{session_key}_cam")
-        if cam:
-            img = Image.open(cam).resize((600, 600))
-            st.info(f"Uploading {label.lower()} photo...")
-            url = upload_to_imgbb(img)
-            if url:
-                st.session_state[f"{session_key}_url"] = url
-                st.success(f"{label} photo uploaded ✅")
-            else:
-                st.error(f"Failed to upload {label.lower()} photo.")
-            placeholder.empty()
+    cam = st.camera_input(f"📸 Capture {label} Photo", key=f"{session_key}_cam")
+
+    if cam:
+        img = Image.open(cam).resize((600, 600))
+        st.info(f"Uploading {label.lower()} photo...")
+        url = upload_to_imgbb(img)
+        if url:
+            st.session_state[f"{session_key}_url"] = url
+            st.success(f"{label} photo uploaded ✅")
+        else:
+            st.error(f"Failed to upload {label.lower()} photo.")
+
 
 photo_capture_section("Employee", "employee_photo")
 if employee_type == "Rider":
