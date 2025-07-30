@@ -89,17 +89,27 @@ def checklist_buttons(label):
     if f"{key_prefix}_remark" not in st.session_state:
         st.session_state[f"{key_prefix}_remark"] = ""
 
+    selected_value = st.session_state[f"{key_prefix}_value"]
+
     with col1:
-        if st.button("✅", key=f"{key_prefix}_yes"):
+        if st.button("✅", key=f"{key_prefix}_yes", help="Mark as compliant"):
             st.session_state[f"{key_prefix}_value"] = "✅"
             st.session_state[f"{key_prefix}_remark"] = ""
 
+        # Highlight selected ✅
+        if selected_value == "✅":
+            st.markdown("<div style='text-align:center; font-size:24px; background-color:#c6f6d5; padding:5px; border-radius:8px;'>✅</div>", unsafe_allow_html=True)
+
     with col2:
-        if st.button("❌", key=f"{key_prefix}_no"):
+        if st.button("❌", key=f"{key_prefix}_no", help="Mark as non-compliant"):
             st.session_state[f"{key_prefix}_value"] = "❌"
 
+        # Highlight selected ❌
+        if selected_value == "❌":
+            st.markdown("<div style='text-align:center; font-size:24px; background-color:#feb2b2; padding:5px; border-radius:8px;'>❌</div>", unsafe_allow_html=True)
+
     with col3:
-        if st.session_state[f"{key_prefix}_value"] == "❌":
+        if selected_value == "❌":
             st.session_state[f"{key_prefix}_remark"] = st.text_input(
                 f"❗ Remarks for {label}", key=f"{key_prefix}_remark_input"
             )
@@ -108,6 +118,7 @@ def checklist_buttons(label):
         "selection": st.session_state[f"{key_prefix}_value"],
         "remark": st.session_state[f"{key_prefix}_remark"]
     }
+
 
 # === SECTION 6: CHECKLIST FIELDS ===
 st.markdown("<h2 style='text-align: center;'>🧼 Grooming Standards</h2>", unsafe_allow_html=True)
