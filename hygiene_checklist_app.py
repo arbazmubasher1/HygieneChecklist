@@ -258,4 +258,4 @@ if st.button("✅ Submit Checklist"):
         del st.session_state[key]
 
     st.success("✅ Submitted and reset the form!")
-    st.experimental_rerun()
+    st.rerun()
