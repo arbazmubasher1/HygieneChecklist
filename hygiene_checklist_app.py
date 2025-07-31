@@ -49,9 +49,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # === SECTION 1: FILTERS ===
-branch = st.selectbox("📍 Select Branch", [
-    "DHA-P6", "DHA-CC", "Cloud Kitchen", "Johar Town", "Bahria", "Wehshi Lab", "Emporium"
-])
+st.markdown(f"📍 **Branch:** `{branch}`")
 employee_type = st.selectbox("👷 Select Employee Type", ["Crew", "Rider"])
 shift_type = st.selectbox("🕒 Select Shift", ["Morning", "Lunch", "Dinner", "Closing"])
 date = st.date_input("📅 Date", value=datetime.today())
