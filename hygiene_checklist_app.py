@@ -4,6 +4,29 @@ from PIL import Image
 from streamlit_drawable_canvas import st_canvas
 from firebase_imgbb_upload import upload_to_imgbb, submit_to_firebase
 from datetime import datetime, timezone
+# === LOGIN SETUP ===
+valid_users = {
+    f"person@{b.lower().replace(' ', '').replace('-', '')}.com": "123"
+    for b in ["DHA-P6", "DHA-CC", "Cloud Kitchen", "Johar Town", "Bahria", "Wehshi Lab", "Emporium"]
+}
+
+def authenticate():
+    st.title("🔐 Login to Access Hygiene Checklist")
+    email = st.text_input("Email", key="login_email")
+    password = st.text_input("Password", type="password", key="login_password")
+
+    if st.button("Login"):
+        if email.lower() in valid_users and password == valid_users[email.lower()]:
+            st.session_state["authenticated"] = True
+            st.session_state["user_email"] = email
+            st.experimental_rerun()
+        else:
+            st.error("Invalid email or password.")
+
+# Force login if not authenticated
+if "authenticated" not in st.session_state or not st.session_state["authenticated"]:
+    authenticate()
+    st.stop()
 
 
 # === CONFIG ===
