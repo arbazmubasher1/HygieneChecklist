@@ -19,7 +19,7 @@ def authenticate():
         if email.lower() in valid_users and password == valid_users[email.lower()]:
             st.session_state["authenticated"] = True
             st.session_state["user_email"] = email
-            st.experimental_rerun()
+            st.rerun()
         else:
             st.error("Invalid email or password.")
 
