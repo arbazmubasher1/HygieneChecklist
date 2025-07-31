@@ -10,6 +10,8 @@ valid_users = {
     for b in ["DHA-P6", "DHA-CC", "Cloud Kitchen", "Johar Town", "Bahria", "Wehshi Lab", "Emporium"]
 }
 
+
+
 def authenticate():
     st.title("🔐 Login to Access Hygiene Checklist")
     email = st.text_input("Email", key="login_email")
@@ -28,6 +30,17 @@ if "authenticated" not in st.session_state or not st.session_state["authenticate
     authenticate()
     st.stop()
 
+email_prefix = st.session_state["user_email"].split("@")[1].split(".")[0]
+branch_mapping = {
+    "dhap6": "DHA-P6",
+    "dhacc": "DHA-CC",
+    "cloudkitchen": "Cloud Kitchen",
+    "johartown": "Johar Town",
+    "bahria": "Bahria",
+    "wehshilab": "Wehshi Lab",
+    "emporium": "Emporium"
+}
+branch = branch_mapping.get(email_prefix.lower(), "Unknown Branch")
 
 # === CONFIG ===
 st.set_page_config(page_title="Hygiene Checklist", layout="wide")
