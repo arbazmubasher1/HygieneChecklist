@@ -74,31 +74,47 @@ st.subheader("👤 Employee Details")
 emp_id = st.number_input("Employee ID", step=1, format="%d", key="emp_id")
 emp_name = st.text_input("Employee Name", key="emp_name")
 
-# === SECTION 3: PHOTO CAPTURE WITH IMMEDIATE UPLOAD ===
-st.subheader("📸 Capture Photos")
+# === SECTION 3: PHOTO UPLOAD WITH IMMEDIATE UPLOAD ===
+st.subheader("🖼️ Upload Photos")
 
-def photo_capture_section(label, session_key):
+def photo_upload_section(label, session_key):
+    """Upload an image from device and immediately push to ImgBB once selected."""
+    # If we already uploaded this photo in this session, just show success
     if st.session_state.get(f"{session_key}_url"):
         st.success(f"{label} photo uploaded ✅")
         return
 
-    cam = st.camera_input(f"📸 Capture {label} Photo", key=f"{session_key}_cam")
+    uploaded = st.file_uploader(
+        f"📤 Upload {label} Photo",
+        type=["png", "jpg", "jpeg", "webp"],
+        key=f"{session_key}_uploader",
+        accept_multiple_files=False,
+        help="Select an image from your device (PNG/JPG/WEBP)."
+    )
 
-    if cam:
-        img = Image.open(cam)
-        #.resize((600, 600))
-        st.info(f"Uploading {label.lower()} photo...")
-        url = upload_to_imgbb(img)
-        if url:
-            st.session_state[f"{session_key}_url"] = url
-            st.success(f"{label} photo uploaded ✅")
-        else:
-            st.error(f"Failed to upload {label.lower()} photo.")
+    if uploaded is not None:
+        try:
+            # Open with PIL (and normalize mode to avoid weird alpha issues)
+            img = Image.open(uploaded)
+            if img.mode not in ("RGB", "RGBA"):
+                img = img.convert("RGB")
 
+            st.info(f"Uploading {label.lower()} photo…")
+            url = upload_to_imgbb(img)
 
-photo_capture_section("Employee", "employee_photo")
+            if url:
+                st.session_state[f"{session_key}_url"] = url
+                st.success(f"{label} photo uploaded ✅")
+            else:
+                st.error(f"Failed to upload {label.lower()} photo.")
+        except Exception as e:
+            st.error(f"Could not read image file: {e}")
+
+# Replace previous calls:
+photo_upload_section("Employee", "employee_photo")
 if employee_type == "Rider":
-    photo_capture_section("Bike", "bike_photo")
+    photo_upload_section("Bike", "bike_photo")
+
 
 # === SECTION 4: REFERENCE IMAGE ===
 reference_image = None
