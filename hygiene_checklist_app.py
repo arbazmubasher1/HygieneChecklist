@@ -11,6 +11,17 @@ valid_users = {
 }
 
 
+def reset_checklist_state():
+    """Clear all checklist-related session state but keep auth + email."""
+    preserve_keys = {"authenticated", "user_email"}
+    to_delete = [k for k in list(st.session_state.keys()) if k not in preserve_keys]
+    for k in to_delete:
+        del st.session_state[k]
+    # optional: bump a nonce to ensure all widgets reinit cleanly
+    st.session_state["reset_nonce"] = datetime.now().timestamp()
+    st.rerun()
+
+
 
 def authenticate():
     st.title("🔐 Login to Access Hygiene Checklist")
@@ -301,7 +312,22 @@ if st.button("✅ Submit Checklist"):
 
     st.success("✅ Checklist submitted successfully!")
     st.info(f"🧮 Final Hygiene Score: **{correct_checked} / {total_checked}** ({score_percentage}%)")
-    import time
-    time.sleep(10)
-    # Force full refresh
-    st.markdown("<meta http-equiv='refresh' content='0'>", unsafe_allow_html=True)
+    st.success("✅ Checklist submitted successfully!")
+    st.info(f"🧮 Final Hygiene Score: **{correct_checked} / {total_checked}** ({score_percentage}%)")
+
+    col_a, col_b = st.columns([1,1])
+    with col_a:
+        if st.button("🔄 New Checklist"):
+            reset_checklist_state()
+    with col_b:
+        if st.button("🚪 Log out"):
+            # Only clear auth-related keys here
+            for k in ["authenticated", "user_email"]:
+                if k in st.session_state:
+                    del st.session_state[k]
+            st.rerun()
+
+    # import time
+    # time.sleep(10)
+    # # Force full refresh
+    # st.markdown("<meta http-equiv='refresh' content='0'>", unsafe_allow_html=True)
